@@ -1,0 +1,26 @@
+{
+  "name": "setup-doctl",
+  "version": "1.0.0",
+  "description": "Enable GitHub developers to connect to DigitalOcean using GitHub Actions",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --rootDir ./src/ --outDir ./dist/"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
+  "author": "Joao Correia",
+  "license": "MIT",
+  "homepage": "https://github.com/musagen/setup-doctl#readme",
+  "dependencies": {
+    "@actions/core": "1.2.0",
+    "@actions/exec": "1.0.1",
+    "@actions/tool-cache": "1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "12.11.1"
+  }
+}
