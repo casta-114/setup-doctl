@@ -55,10 +55,7 @@ async function download(version: string): Promise<string> {
 async function getLatestVersion(): Promise<string> {
     return toolCache.downloadTool(latestVersionUrl)
         .then((data) => {
-            console.log(`console: latest Version data: $data`);
-            core.error(`core error: latest Version data: $data`);
-            core.info(`core info: latest Version data: $data`);
-            core.info(`core debug: latest Version data: $data`);
+            core.info(`core debug: latest Version data: ${data}`);
             return data['tag_name'].slice(1);
         }, error => {
             core.debug(error);
