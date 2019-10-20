@@ -57,6 +57,7 @@ function getLatestVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return toolCache.downloadTool(latestVersionUrl)
             .then((data) => {
+            console.log(`latest Version data: $data`);
             return data['tag_name'].slice(1);
         }, error => {
             core.debug(error);
@@ -67,7 +68,7 @@ function getLatestVersion() {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        let version = 'latest';
+        let version = core.getInput('version', { 'required': true });
         if (version.toLocaleLowerCase() === 'latest') {
             version = yield getLatestVersion();
         }
