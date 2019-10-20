@@ -54,8 +54,9 @@ async function download(version: string): Promise<string> {
 
 async function getLatestVersion(): Promise<string> {
     return toolCache.downloadTool(latestVersionUrl)
-        .then((data) => {
-            core.info(`core debug: latest Version data: ${data}`);
+        .then((jsonPath) => {
+            const data = fs.readFileSync(jsonPath, 'utf8').toString().trim();
+            core.info(`latest Version data: ${data}`);
             return data['tag_name'].slice(1);
         }, error => {
             core.debug(error);
