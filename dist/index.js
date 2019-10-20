@@ -57,7 +57,10 @@ function getLatestVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return toolCache.downloadTool(latestVersionUrl)
             .then((data) => {
-            console.log(`latest Version data: $data`);
+            console.log(`console: latest Version data: $data`);
+            core.error(`core error: latest Version data: $data`);
+            core.info(`core info: latest Version data: $data`);
+            core.info(`core debug: latest Version data: $data`);
             return data['tag_name'].slice(1);
         }, error => {
             core.debug(error);
