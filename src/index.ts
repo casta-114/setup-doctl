@@ -32,16 +32,17 @@ async function getTool(version: string): Promise<string> {
 
     let cachedToolPath = tc.find(toolName, version);
     if (!cachedToolPath) {
-        core.info('Downloading ...');
-        const doctlZippedPath = await tc.downloadTool(getDownloadURL(version));
+        const downloadPath = getDownloadURL(version);
+        core.info(`### Downloading from: ${downloadPath}`);
+        const doctlZippedPath = await tc.downloadTool(downloadPath);
         let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
 
-        core.info('Extracting ...');
+        core.info('### Extracting ...');
         doctlExtractedPath = process.platform === 'win32'
             ? await tc.extractZip(doctlZippedPath, doctlExtractedPath)
             : await tc.extractTar(doctlZippedPath, doctlExtractedPath);
 
-        core.info('Caching ...');
+        core.info(`### Caching file: ${doctlExtractedPath}`);
         cachedToolPath = await tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
     }
 
@@ -79,13 +80,13 @@ async function getLatestVersion(): Promise<string> {
 }
 
 async function run() {
-    core.info("Getting Version ...");
+    core.info("### Getting Version ...");
     let version = core.getInput('version', {'required': true});
     if (version.toLocaleLowerCase() === 'latest') {
         version = await getLatestVersion();
     }
 
-    core.info(`Version: ${version}`);
+    core.info(`version: ${version}`);
     const cachedPath = await getTool(version);
 
     core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);

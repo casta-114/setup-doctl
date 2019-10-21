@@ -38,14 +38,15 @@ function getTool(version) {
     return __awaiter(this, void 0, void 0, function* () {
         let cachedToolPath = tc.find(toolName, version);
         if (!cachedToolPath) {
-            core.info('Downloading ...');
-            const doctlZippedPath = yield tc.downloadTool(getDownloadURL(version));
+            const downloadPath = getDownloadURL(version);
+            core.info(`### Downloading from: ${downloadPath}`);
+            const doctlZippedPath = yield tc.downloadTool(downloadPath);
             let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
-            core.info('Extracting ...');
+            core.info('### Extracting ...');
             doctlExtractedPath = process.platform === 'win32'
                 ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
                 : yield tc.extractTar(doctlZippedPath, doctlExtractedPath);
-            core.info('Caching ...');
+            core.info(`### Caching file: ${doctlExtractedPath}`);
             cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
         }
         const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
@@ -82,12 +83,12 @@ function getLatestVersion() {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info("Getting Version ...");
+        core.info("### Getting Version ...");
         let version = core.getInput('version', { 'required': true });
         if (version.toLocaleLowerCase() === 'latest') {
             version = yield getLatestVersion();
         }
-        core.info(`Version: ${version}`);
+        core.info(`version: ${version}`);
         const cachedPath = yield getTool(version);
         core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
         core.setOutput('doctl-path', cachedPath);
