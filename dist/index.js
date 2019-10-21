@@ -17,7 +17,6 @@ const tc = require("@actions/tool-cache");
 const core = require("@actions/core");
 const toolName = 'doctl';
 const latestStableVersion = '1.32.3';
-const toolFolderPath = '/Users/actions/';
 function getExecutableExtension() {
     if (os.type().match(/^Win/)) {
         return '.exe';
@@ -40,9 +39,10 @@ function download(version) {
         let cachedToolPath = tc.find(toolName, version);
         if (!cachedToolPath) {
             const doctlZippedPath = yield tc.downloadTool(getDownloadURL(version));
+            core.info(doctlZippedPath);
             const doctlExtractedPath = process.platform === 'win32'
-                ? yield tc.extractZip(doctlZippedPath, toolFolderPath)
-                : yield tc.extractTar(doctlZippedPath, toolFolderPath);
+                ? yield tc.extractZip(doctlZippedPath, doctlZippedPath)
+                : yield tc.extractTar(doctlZippedPath, doctlZippedPath);
             cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
         }
         const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
