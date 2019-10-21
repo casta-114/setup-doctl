@@ -11,13 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = require("os");
 const path = require("path");
-const util = require("util");
 const fs = require("fs");
-const toolCache = require("@actions/tool-cache");
+const https = require("https");
+const tc = require("@actions/tool-cache");
 const core = require("@actions/core");
 const toolName = 'doctl';
 const latestStableVersion = '1.32.3';
-const latestVersionUrl = 'https://api.github.com/repos/digitalocean/doctl/releases/latest';
+const toolFolderPath = '/Users/actions/';
 function getExecutableExtension() {
     if (os.type().match(/^Win/)) {
         return '.exe';
@@ -27,40 +27,49 @@ function getExecutableExtension() {
 function getDownloadURL(version) {
     switch (os.type()) {
         case 'Linux':
-            return util.format('https://github.com/digitalocean/doctl/releases/download/v%s/doctl-%s-linux-amd64.tar.gz', version);
+            return `https://github.com/digitalocean/doctl/releases/download/v${version}/doctl-${version}-linux-amd64.tar.gz`;
         case 'Darwin':
-            return util.format('https://github.com/digitalocean/doctl/releases/download/v%s/doctl-%s-darwin-amd64.tar.gz', version);
+            return `https://github.com/digitalocean/doctl/releases/download/v${version}/doctl-${version}-darwin-amd64.tar.gz`;
         case 'Windows_NT':
         default:
-            return util.format('https://github.com/digitalocean/doctl/releases/download/v%s/doctl-%s-windows-amd64.zip', version);
+            return `https://github.com/digitalocean/doctl/releases/download/v${version}/doctl-${version}-windows-amd64.zip`;
     }
 }
 function download(version) {
     return __awaiter(this, void 0, void 0, function* () {
-        let cachedToolpath = toolCache.find(toolName, version);
-        let doctlDownloadPath = '';
-        if (!cachedToolpath) {
-            try {
-                doctlDownloadPath = yield toolCache.downloadTool(getDownloadURL(version));
-            }
-            catch (exception) {
-                throw new Error('DownloadDoctlFailed');
-            }
-            cachedToolpath = yield toolCache.cacheFile(doctlDownloadPath, toolName + getExecutableExtension(), toolName, version);
+        let cachedToolPath = tc.find(toolName, version);
+        if (!cachedToolPath) {
+            const doctlZippedPath = yield tc.downloadTool(getDownloadURL(version));
+            const doctlExtractedPath = process.platform === 'win32'
+                ? yield tc.extractZip(doctlZippedPath, toolFolderPath)
+                : yield tc.extractTar(doctlZippedPath, toolFolderPath);
+            cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
         }
-        const doctlPath = path.join(cachedToolpath, toolName + getExecutableExtension());
+        const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
         fs.chmodSync(doctlPath, '777');
         return doctlPath;
     });
 }
 function getLatestVersion() {
     return __awaiter(this, void 0, void 0, function* () {
-        return toolCache.downloadTool(latestVersionUrl)
-            .then((jsonPath) => {
-            const data = fs.readFileSync(jsonPath, 'utf8').toString().trim();
-            core.info(`latest Version data: ${data}`);
-            return data['tag_name'].slice(1);
-        }, error => {
+        return new Promise((resolve, reject) => {
+            https.request({
+                method: 'GET',
+                port: 443,
+                hostname: 'api.github.com',
+                path: '/repos/digitalocean/doctl/releases/latest',
+                headers: {
+                    'User-Agent': 'musagen/setup-doctl'
+                }
+            }, (res) => {
+                const body = [];
+                res.on('data', (fragment) => body.push(fragment));
+                res.on('end', () => resolve(JSON.parse(Buffer.concat(body).toString())));
+                res.on('error', (error) => reject(error));
+            }).end();
+        })
+            .then(json => json['tag_name'].slice(1))
+            .catch(error => {
             core.debug(error);
             core.warning('getLatestVersionFailed');
             return latestStableVersion;
