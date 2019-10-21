@@ -34,20 +34,23 @@ function getDownloadURL(version) {
             return `https://github.com/digitalocean/doctl/releases/download/v${version}/doctl-${version}-windows-amd64.zip`;
     }
 }
-function download(version) {
+function getTool(version) {
     return __awaiter(this, void 0, void 0, function* () {
         let cachedToolPath = tc.find(toolName, version);
         if (!cachedToolPath) {
+            core.info('Downloading ...');
             const doctlZippedPath = yield tc.downloadTool(getDownloadURL(version));
-            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'));
-            core.info(doctlExtractedPath);
+            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
+            core.info('Extracting ...');
             doctlExtractedPath = process.platform === 'win32'
                 ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
                 : yield tc.extractTar(doctlZippedPath, doctlExtractedPath);
+            core.info('Caching ...');
             cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
         }
         const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
         fs.chmodSync(doctlPath, '777');
+        core.info(`doctl-path: ${doctlPath}`);
         return doctlPath;
     });
 }
@@ -79,12 +82,14 @@ function getLatestVersion() {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.info("Getting Version ...");
         let version = core.getInput('version', { 'required': true });
         if (version.toLocaleLowerCase() === 'latest') {
             version = yield getLatestVersion();
         }
-        const cachedPath = yield download(version);
-        console.log(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
+        core.info(`Version: ${version}`);
+        const cachedPath = yield getTool(version);
+        core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
         core.setOutput('doctl-path', cachedPath);
     });
 }

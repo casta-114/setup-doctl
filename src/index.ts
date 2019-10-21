@@ -28,17 +28,20 @@ function getDownloadURL(version: string): string {
     }
 }
 
-async function download(version: string): Promise<string> {
+async function getTool(version: string): Promise<string> {
 
     let cachedToolPath = tc.find(toolName, version);
     if (!cachedToolPath) {
+        core.info('Downloading ...');
         const doctlZippedPath = await tc.downloadTool(getDownloadURL(version));
-        let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'));
-        core.info(doctlExtractedPath);
+        let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
+
+        core.info('Extracting ...');
         doctlExtractedPath = process.platform === 'win32'
             ? await tc.extractZip(doctlZippedPath, doctlExtractedPath)
             : await tc.extractTar(doctlZippedPath, doctlExtractedPath);
 
+        core.info('Caching ...');
         cachedToolPath = await tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
     }
 
@@ -46,6 +49,7 @@ async function download(version: string): Promise<string> {
 
     fs.chmodSync(doctlPath, '777');
 
+    core.info(`doctl-path: ${doctlPath}`);
     return doctlPath;
 }
 
@@ -75,14 +79,16 @@ async function getLatestVersion(): Promise<string> {
 }
 
 async function run() {
+    core.info("Getting Version ...");
     let version = core.getInput('version', {'required': true});
     if (version.toLocaleLowerCase() === 'latest') {
         version = await getLatestVersion();
     }
 
-    const cachedPath = await download(version);
+    core.info(`Version: ${version}`);
+    const cachedPath = await getTool(version);
 
-    console.log(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
+    core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
 
     core.setOutput('doctl-path', cachedPath);
 }
