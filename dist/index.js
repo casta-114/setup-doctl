@@ -39,7 +39,7 @@ function getTool(version) {
             const downloadPath = getDownloadURL(version);
             core.info(`### Downloading from: ${downloadPath}`);
             const doctlZippedPath = yield tc.downloadTool(downloadPath);
-            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
+            let doctlExtractedPath = `${doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'))}/${toolName}`;
             core.info('### Extracting ...');
             doctlExtractedPath = process.platform === 'win32'
                 ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
