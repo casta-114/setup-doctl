@@ -8,7 +8,6 @@ import * as core from '@actions/core';
 
 const toolName = 'doctl';
 const latestStableVersion = '1.32.3';
-const toolFolderPath = '/Users/actions/';
 
 function getExecutableExtension(): string {
     if (os.type().match(/^Win/)) {
@@ -34,9 +33,10 @@ async function download(version: string): Promise<string> {
     let cachedToolPath = tc.find(toolName, version);
     if (!cachedToolPath) {
         const doctlZippedPath = await tc.downloadTool(getDownloadURL(version));
+        core.info(doctlZippedPath);
         const doctlExtractedPath = process.platform === 'win32'
-            ? await tc.extractZip(doctlZippedPath, toolFolderPath)
-            : await tc.extractTar(doctlZippedPath, toolFolderPath);
+            ? await tc.extractZip(doctlZippedPath, doctlZippedPath)
+            : await tc.extractTar(doctlZippedPath, doctlZippedPath);
 
         cachedToolPath = await tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
     }
