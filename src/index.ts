@@ -7,13 +7,6 @@ import * as core from '@actions/core';
 const toolName = 'doctl';
 const latestStableVersion = '1.32.3';
 
-function getExecutableExtension(): string {
-    if (os.type().match(/^Win/)) {
-        return '.exe';
-    }
-    return '';
-}
-
 function getDownloadURL(version: string): string {
     switch (os.type()) {
         case 'Linux':
@@ -34,7 +27,7 @@ async function getTool(version: string): Promise<string> {
         const downloadPath = getDownloadURL(version);
         core.info(`### Downloading from: ${downloadPath}`);
         const doctlZippedPath = await tc.downloadTool(downloadPath);
-        let doctlExtractedPath = `${doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'))}/${toolName}`;
+        let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
 
         core.info('### Extracting ...');
         doctlExtractedPath = process.platform === 'win32'

@@ -15,12 +15,6 @@ const tc = require("@actions/tool-cache");
 const core = require("@actions/core");
 const toolName = 'doctl';
 const latestStableVersion = '1.32.3';
-function getExecutableExtension() {
-    if (os.type().match(/^Win/)) {
-        return '.exe';
-    }
-    return '';
-}
 function getDownloadURL(version) {
     switch (os.type()) {
         case 'Linux':
@@ -39,7 +33,7 @@ function getTool(version) {
             const downloadPath = getDownloadURL(version);
             core.info(`### Downloading from: ${downloadPath}`);
             const doctlZippedPath = yield tc.downloadTool(downloadPath);
-            let doctlExtractedPath = `${doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'))}/${toolName}`;
+            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
             core.info('### Extracting ...');
             doctlExtractedPath = process.platform === 'win32'
                 ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
