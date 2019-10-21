@@ -1,6 +1,4 @@
 import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
 import * as https from 'https';
 
 import * as tc from '@actions/tool-cache';
@@ -31,6 +29,7 @@ function getDownloadURL(version: string): string {
 async function getTool(version: string): Promise<string> {
 
     let cachedToolPath = tc.find(toolName, version);
+
     if (!cachedToolPath) {
         const downloadPath = getDownloadURL(version);
         core.info(`### Downloading from: ${downloadPath}`);
@@ -42,16 +41,11 @@ async function getTool(version: string): Promise<string> {
             ? await tc.extractZip(doctlZippedPath, doctlExtractedPath)
             : await tc.extractTar(doctlZippedPath, doctlExtractedPath);
 
-        core.info(`### Caching file: ${doctlExtractedPath}`);
-        cachedToolPath = await tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
+        core.info(`### Caching dir: ${doctlExtractedPath}`);
+        cachedToolPath = await tc.cacheDir(doctlExtractedPath, toolName, version);
     }
 
-    const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
-
-    fs.chmodSync(doctlPath, '777');
-
-    core.info(`doctl-path: ${doctlPath}`);
-    return doctlPath;
+    return cachedToolPath;
 }
 
 async function getLatestVersion(): Promise<string> {
@@ -88,6 +82,8 @@ async function run() {
 
     core.info(`version: ${version}`);
     const cachedPath = await getTool(version);
+
+    core.addPath(cachedPath);
 
     core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
 

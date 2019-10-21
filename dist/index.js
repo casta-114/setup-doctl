@@ -10,8 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = require("os");
-const path = require("path");
-const fs = require("fs");
 const https = require("https");
 const tc = require("@actions/tool-cache");
 const core = require("@actions/core");
@@ -46,13 +44,10 @@ function getTool(version) {
             doctlExtractedPath = process.platform === 'win32'
                 ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
                 : yield tc.extractTar(doctlZippedPath, doctlExtractedPath);
-            core.info(`### Caching file: ${doctlExtractedPath}`);
-            cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
+            core.info(`### Caching dir: ${doctlExtractedPath}`);
+            cachedToolPath = yield tc.cacheDir(doctlExtractedPath, toolName, version);
         }
-        const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());
-        fs.chmodSync(doctlPath, '777');
-        core.info(`doctl-path: ${doctlPath}`);
-        return doctlPath;
+        return cachedToolPath;
     });
 }
 function getLatestVersion() {
@@ -90,6 +85,7 @@ function run() {
         }
         core.info(`version: ${version}`);
         const cachedPath = yield getTool(version);
+        core.addPath(cachedPath);
         core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
         core.setOutput('doctl-path', cachedPath);
     });
