@@ -39,10 +39,11 @@ function download(version) {
         let cachedToolPath = tc.find(toolName, version);
         if (!cachedToolPath) {
             const doctlZippedPath = yield tc.downloadTool(getDownloadURL(version));
-            core.info(doctlZippedPath);
-            const doctlExtractedPath = process.platform === 'win32'
-                ? yield tc.extractZip(doctlZippedPath, doctlZippedPath)
-                : yield tc.extractTar(doctlZippedPath, doctlZippedPath);
+            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'));
+            core.info(doctlExtractedPath);
+            doctlExtractedPath = process.platform === 'win32'
+                ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
+                : yield tc.extractTar(doctlZippedPath, doctlExtractedPath);
             cachedToolPath = yield tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
         }
         const doctlPath = path.join(cachedToolPath, toolName + getExecutableExtension());

@@ -33,10 +33,11 @@ async function download(version: string): Promise<string> {
     let cachedToolPath = tc.find(toolName, version);
     if (!cachedToolPath) {
         const doctlZippedPath = await tc.downloadTool(getDownloadURL(version));
-        core.info(doctlZippedPath);
-        const doctlExtractedPath = process.platform === 'win32'
-            ? await tc.extractZip(doctlZippedPath, doctlZippedPath)
-            : await tc.extractTar(doctlZippedPath, doctlZippedPath);
+        let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/_temp'));
+        core.info(doctlExtractedPath);
+        doctlExtractedPath = process.platform === 'win32'
+            ? await tc.extractZip(doctlZippedPath, doctlExtractedPath)
+            : await tc.extractTar(doctlZippedPath, doctlExtractedPath);
 
         cachedToolPath = await tc.cacheFile(doctlExtractedPath, toolName + getExecutableExtension(), toolName, version);
     }
