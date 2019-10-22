@@ -1,8 +1,9 @@
-import * as os from 'os';
 import * as https from 'https';
+import * as os from 'os';
 
-import * as tc from '@actions/tool-cache';
 import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import * as tc from '@actions/tool-cache';
 
 const toolName = 'doctl';
 const latestKnownStableVersion = '1.32.3';
@@ -85,6 +86,15 @@ async function run() {
     core.addPath(doctlPath);
 
     core.info(`doctl tool version: '${version}' has been cached at ${doctlPath}`);
+
+    core.info("### Login In ...");
+
+    const doToken = process.env.DIGITAL_OCEAN_TOKEN;
+    if (!doToken) {
+        core.warning('Please set DIGITAL_OCEAN_TOKEN env property to login');
+    } else {
+        exec.exec('doctl auth init');
+    }
 
     core.setOutput('doctl-path', doctlPath);
 }

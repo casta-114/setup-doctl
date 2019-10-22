@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = require("os");
 const https = require("https");
-const tc = require("@actions/tool-cache");
+const os = require("os");
 const core = require("@actions/core");
+const exec = require("@actions/exec");
+const tc = require("@actions/tool-cache");
 const toolName = 'doctl';
 const latestKnownStableVersion = '1.32.3';
 function getDownloadURL(version) {
@@ -83,6 +84,14 @@ function run() {
         const doctlPath = yield getToolPath(version);
         core.addPath(doctlPath);
         core.info(`doctl tool version: '${version}' has been cached at ${doctlPath}`);
+        core.info("### Login In ...");
+        const doToken = process.env.DIGITAL_OCEAN_TOKEN;
+        if (!doToken) {
+            core.warning('Please set DIGITAL_OCEAN_TOKEN env property to login');
+        }
+        else {
+            exec.exec('doctl auth init');
+        }
         core.setOutput('doctl-path', doctlPath);
     });
 }
