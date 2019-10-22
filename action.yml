@@ -14,4 +14,4 @@ branding:
   color: 'blue'
 runs:
   using: 'node12'
-  main: 'main/index.js'
+  main: 'dist/main.js'
