@@ -14,7 +14,7 @@ const https = require("https");
 const tc = require("@actions/tool-cache");
 const core = require("@actions/core");
 const toolName = 'doctl';
-const latestStableVersion = '1.32.3';
+const latestKnownStableVersion = '1.32.3';
 function getDownloadURL(version) {
     switch (os.type()) {
         case 'Linux':
@@ -26,22 +26,25 @@ function getDownloadURL(version) {
             return `https://github.com/digitalocean/doctl/releases/download/v${version}/doctl-${version}-windows-amd64.zip`;
     }
 }
-function getTool(version) {
+function downloadTool(path) {
     return __awaiter(this, void 0, void 0, function* () {
-        let cachedToolPath = tc.find(toolName, version);
-        if (!cachedToolPath) {
-            const downloadPath = getDownloadURL(version);
-            core.info(`### Downloading from: ${downloadPath}`);
-            const doctlZippedPath = yield tc.downloadTool(downloadPath);
-            let doctlExtractedPath = doctlZippedPath.substr(0, doctlZippedPath.lastIndexOf('/'));
-            core.info('### Extracting ...');
-            doctlExtractedPath = process.platform === 'win32'
-                ? yield tc.extractZip(doctlZippedPath, doctlExtractedPath)
-                : yield tc.extractTar(doctlZippedPath, doctlExtractedPath);
-            core.info(`### Caching dir: ${doctlExtractedPath}`);
-            cachedToolPath = yield tc.cacheDir(doctlExtractedPath, toolName, version);
+        core.info(`### Downloading from: ${path}`);
+        const downloadPath = yield tc.downloadTool(path);
+        core.info('### Extracting ...');
+        const extractedPath = downloadPath.substr(0, downloadPath.lastIndexOf('/'));
+        return process.platform === 'win32'
+            ? yield tc.extractZip(downloadPath, extractedPath)
+            : yield tc.extractTar(downloadPath, extractedPath);
+    });
+}
+function getToolPath(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let toolPath = tc.find(toolName, version);
+        if (!toolPath) {
+            const downloadPath = yield downloadTool(getDownloadURL(version));
+            toolPath = yield tc.cacheDir(downloadPath, toolName, version);
         }
-        return cachedToolPath;
+        return toolPath;
     });
 }
 function getLatestVersion() {
@@ -64,9 +67,8 @@ function getLatestVersion() {
         })
             .then(json => json['tag_name'].slice(1))
             .catch(error => {
-            core.debug(error);
-            core.warning('getLatestVersionFailed');
-            return latestStableVersion;
+            core.warning(`get latest version failed, returning: ${latestKnownStableVersion}`);
+            return latestKnownStableVersion;
         });
     });
 }
@@ -78,10 +80,10 @@ function run() {
             version = yield getLatestVersion();
         }
         core.info(`version: ${version}`);
-        const cachedPath = yield getTool(version);
-        core.addPath(cachedPath);
-        core.info(`doctl tool version: '${version}' has been cached at ${cachedPath}`);
-        core.setOutput('doctl-path', cachedPath);
+        const doctlPath = yield getToolPath(version);
+        core.addPath(doctlPath);
+        core.info(`doctl tool version: '${version}' has been cached at ${doctlPath}`);
+        core.setOutput('doctl-path', doctlPath);
     });
 }
 run().catch(core.setFailed);
