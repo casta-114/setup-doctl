@@ -1,8 +1,8 @@
 # Setup doctl
 
-Install a specific version of doctl binary on the runner.
+Install a specific version of [doctl](https://github.com/digitalocean/doctl) binary on the runner.
 
-Acceptable values are latest or any semantic version string like 1.15.0.
+Acceptable values are 'latest' or any semantic version string like 1.32.3.
 Use this action in workflow to define which version of doctl will be used.
 
 ```yaml
