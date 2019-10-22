@@ -1,4 +1,5 @@
 name: 'doctl tool installer'
+author: 'Joao Correia'
 description: 'Install a specific version of doctl binary. Acceptable values are latest or any semantic version string like 1.15.0'
 inputs:
   version:
@@ -9,7 +10,8 @@ outputs:
   doctl-path:
     description: 'Path to the cached kubectl binary'
 branding:
+  icon: 'octagon'
   color: 'blue'
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'main/index.js'

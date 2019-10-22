@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Enable GitHub developers to connect to DigitalOcean using GitHub Actions",
   "private": true,
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "scripts": {
     "build": "tsc --rootDir ./src/ --outDir ./dist/"
   },
