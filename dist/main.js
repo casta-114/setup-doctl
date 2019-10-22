@@ -90,7 +90,7 @@ function run() {
             core.warning('Please set DIGITAL_OCEAN_TOKEN env property to login');
         }
         else {
-            exec.exec('doctl auth init');
+            yield exec.exec('doctl auth init');
         }
         core.setOutput('doctl-path', doctlPath);
     });
