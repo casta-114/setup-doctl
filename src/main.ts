@@ -89,12 +89,8 @@ async function run() {
 
     core.info("### Login In ...");
 
-    const doToken = process.env.DIGITAL_OCEAN_TOKEN;
-    if (!doToken) {
-        core.warning('Please set DIGITAL_OCEAN_TOKEN env property to login');
-    } else {
-        await exec.exec('doctl auth init');
-    }
+    const doToken = core.getInput('token', {'required': true});
+    await exec.exec('doctl auth init -t', [doToken]);
 
     core.setOutput('doctl-path', doctlPath);
 }

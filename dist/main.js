@@ -85,13 +85,8 @@ function run() {
         core.addPath(doctlPath);
         core.info(`doctl tool version: '${version}' has been cached at ${doctlPath}`);
         core.info("### Login In ...");
-        const doToken = process.env.DIGITAL_OCEAN_TOKEN;
-        if (!doToken) {
-            core.warning('Please set DIGITAL_OCEAN_TOKEN env property to login');
-        }
-        else {
-            yield exec.exec('doctl auth init');
-        }
+        const doToken = core.getInput('token', { 'required': true });
+        yield exec.exec('doctl auth init -t', [doToken]);
         core.setOutput('doctl-path', doctlPath);
     });
 }
