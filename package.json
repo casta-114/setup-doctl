@@ -1,6 +1,6 @@
 {
   "name": "setup-doctl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enable GitHub developers to connect to DigitalOcean using GitHub Actions",
   "private": true,
   "main": "dist/main.js",
